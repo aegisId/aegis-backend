@@ -1,9 +1,0 @@
-name: Trigger SonarQube Scan
-
-on:
-  workflow_dispatch:
-
-jobs:
-  call-sonarqube-scan:
-    uses: kanalabs/devops_workflow/.github/workflows/sonarqube.yaml@main
-    secrets: inherit
