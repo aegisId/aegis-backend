@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:570870523275:certificate/4082f15a-5452-4f27-a47a-e4a4c3c2bf30
+    alb.ingress.kubernetes.io/group.name: kanalabs-alb
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/subnets: subnet-0d627094e9563044d, subnet-0a9da54334ca5740d,
+      subnet-0c3a5c142747c8f12
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60
+    alb.ingress.kubernetes.io/target-type: ip
+    kubernetes.io/ingress.class: alb
+  name: backend-utility-api
+  namespace: backend-utility-api-mainnet
+spec:
+  rules:
+  - host: utils.kanalabs.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: backend-utility-api
+            port:
+              number: 3006
+        path: /*
+        pathType: ImplementationSpecific

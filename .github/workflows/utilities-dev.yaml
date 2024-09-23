@@ -1,0 +1,93 @@
+name: Deploy to Amazon EKS Mainnet
+
+on: push
+                
+env:
+  AWS_REGION: us-east-2 # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: backend-utility-api # set this to your Amazon ECR repository name
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-mainnet:
+    name: Deploy to backend-utility-api mainnet
+    runs-on: ubuntu-latest
+    environment: mainnet
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        id: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        id: aws-login
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set tag
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image-mainnet
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mainnet-${{ steps.vars.outputs.sha_short }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:mainnet-${{ steps.vars.outputs.sha_short }}
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:mainnet-${{ steps.vars.outputs.sha_short }}"
+
+      - name: update the image tag
+        id: update-image
+        uses: bitsCrunch/update-k8s-image@main
+        with:
+          manifest-path: kubernetes-manifests-mainnet/utilities-deployment.yaml
+          new-image-tag: mainnet-${{ steps.vars.outputs.sha_short }}
+          container-name: backend-utility-api
+
+      - name: Install kubectl and aws-cli 
+        run: |
+          VERSION=$(curl --silent https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+          curl https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/linux/amd64/kubectl \
+              --progress-bar \
+              --location \
+              --remote-name
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          curl -L -o install-aws.sh https://raw.githubusercontent.com/unfor19/install-aws-cli-action/master/entrypoint.sh && \
+          chmod +x install-aws.sh
+          sudo ./install-aws.sh "v2" "amd64"
+          sudo rm install-aws.sh
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          export AWS_DEFAULT_REGION=eu-central-1
+          sudo aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID 
+          sudo aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          sudo aws configure set default.region $AWS_DEFAULT_REGION
+
+      - name: Replacing the Values in secretfile
+        working-directory: kubernetes-manifests-mainnet
+        id: replacing-secrets
+        run: |
+          sed -i "s|SOLANA_RPC_VALUE|${{ vars.SOLANA_RPC_MAINNET }}|g" utilities-secrets.yaml
+          sed -i "s|APTOS_RPC_VALUE|${{ vars.APTOS_RPC_MAINNET }}|g" utilities-secrets.yaml
+          sed -i "s|SUI_RPC_VALUE|${{ vars.SUI_RPC_MAINNET }}|g" utilities-secrets.yaml
+          sed -i "s|UNMARSHAL_API_KEY_VALUE|${{ vars.UNMARSHAL_API_KEY_MAINNET }}|g" utilities-secrets.yaml
+          sed -i "s|ONEINCH_API_KEY_VALUE|${{ vars.ONEINCH_API_KEY_MAINNET }}|g" utilities-secrets.yaml
+          sed -i "s|COVALENTHQ_API_KEY_VALUE|${{ vars.COVALENTHQ_API_KEY_MAINNET }}|g" utilities-secrets.yaml
+          sed -i "s|COINKECGO_API_KEY_VALUE|${{ vars.COINKECGO_API_KEY_MAINNET }}|g" utilities-secrets.yaml
+
+      - name: Connect to EKS and Deploy to Cluster
+        working-directory: kubernetes-manifests-mainnet
+        run: |
+          sudo aws eks --region us-east-2 update-kubeconfig --name kanalabs-non-prod
+          sudo kubectl apply -f .

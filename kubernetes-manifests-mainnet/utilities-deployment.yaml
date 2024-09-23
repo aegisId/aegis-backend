@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-utility-api
+  namespace: backend-utility-api-mainnet
+  labels:
+    app: backend-utility-api
+spec:
+  selector:
+    matchLabels:
+      app: backend-utility-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-utility-api
+    spec:
+      containers:
+      - name: backend-utility-api
+        image: 570870523275.dkr.ecr.us-east-2.amazonaws.com/backend-utility-api:mainnet-latest
+        resources:
+          requests:
+            cpu: 1
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 800Mi
+        env:
+        - name: SOLANA_RPC
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: SOLANA_RPC
+        - name: APTOS_RPC
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: APTOS_RPC
+        - name: SUI_RPC
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: SUI_RPC
+        - name: ONEINCH_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: ONEINCH_API_KEY
+        - name: UNMARSHAL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: UNMARSHAL_API_KEY
+        - name: COVALENTHQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: COVALENTHQ_API_KEY
+        - name: COINKECGO_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-utility-api
+              key: COINKECGO_API_KEY
+        - name: ENVIRONMENT
+          value: "dev"
+        - name: FASTIFY_PORT
+          value: "3006"
+        - name: FASTIFY_HOST
+          value: "0.0.0.0"
+        - name: TOKEN_LIST_REFRESH
+          value: "300000"
+        ports:
+        - containerPort: 3006
+          name: http

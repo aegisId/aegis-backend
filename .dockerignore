@@ -1,0 +1,12 @@
+Dockerfile
+**/node_modules/
+**/.git
+**/LICENSE
+**/.vscode
+**/npm-debug.log
+**/coverage
+**/.editorconfig
+**/dist
+**/.aws
+**/.github/*
+**/.vscode

@@ -1,0 +1,42 @@
+// {
+//   "compilerOptions": {
+//     "target": "es5",
+//     "module": "commonjs",
+//     "sourceMap": true,
+//     "outDir": "dist",
+//     "noImplicitAny": true,
+//     "strictNullChecks": true,
+//     "strictFunctionTypes": true,
+//     "noImplicitThis": true,
+//     "noUnusedParameters": true,
+//     "noImplicitReturns": true,
+//     "allowSyntheticDefaultImports": true,
+//     "esModuleInterop": true,
+//     "emitDecoratorMetadata": true,
+//     "experimentalDecorators": true,
+//     "noEmit": true,
+//     "skipLibCheck": true
+
+//   },
+//   "exclude": [
+//     "node_modules"
+//   ],
+//   "include": [
+//     "./src/**/*.ts"
+//   ]
+// }
+
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/__tests__/*"]
+}
