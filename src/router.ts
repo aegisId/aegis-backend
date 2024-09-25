@@ -5,7 +5,7 @@ import {
   getUserController,
   updateUser,
   deleteUser,
-  getAllController
+  getAllController,
 } from "./controller/userController";
 
 export default async function router(fastify: FastifyInstance) {

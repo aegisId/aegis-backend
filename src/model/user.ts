@@ -30,9 +30,9 @@ const registerSchema = new schema({
   social_points: {
     type: Number,
   },
-  on_chain_points:{
+  on_chain_points: {
     type: Number,
-  }
+  },
 });
 
 export const registerDetails = mongoose.model("user", registerSchema, "user");

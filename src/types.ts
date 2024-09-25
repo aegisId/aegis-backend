@@ -8,5 +8,5 @@ export interface UserPostRequest {
   kyc_points: Number;
   biometric_points: Number;
   social_points: Number;
-  on_chain_points:Number;
+  on_chain_points: Number;
 }
