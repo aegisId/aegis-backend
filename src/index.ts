@@ -2,8 +2,24 @@ import winston from "winston";
 import "winston-daily-rotate-file";
 import app from "./app";
 import * as NodeCache from "node-cache";
+import mongoose from "mongoose";
 
 const { combine, timestamp, json } = winston.format;
+
+mongoose.set({
+  autoCreate: true,
+});
+
+mongoose
+  .connect("mongodb://127.0.0.1:27017/local", {
+    dbName: "local",
+  })
+  .then(() => {
+    logger.info("MongoDB Connected...");
+  })
+  .catch((error: any) => {
+    logger.error("MongoDB connection error: ", error);
+  });
 
 //node-cache to cache token list and its USD price from coin-gecko
 export const cacheClient = new NodeCache.default({ maxKeys: -1 });
