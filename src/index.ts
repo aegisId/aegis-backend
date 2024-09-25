@@ -36,9 +36,7 @@ export const logger = winston.createLogger({
  * @returns {Promise<void>} - A promise that resolves when the token list setting process is complete.
  */
 
-
 const FASTIFY_PORT = Number(process.env.FASTIFY_PORT) || 3006;
 const FASTIFY_HOST = process.env.FASTIFY_HOST || "0.0.0.0";
 
 app.listen({ port: FASTIFY_PORT, host: FASTIFY_HOST });
-
