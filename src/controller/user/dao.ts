@@ -23,7 +23,7 @@ export const updateUserDao = async (recievedData: UserModel) => {
   const updatedUser = await registerDetails.findOneAndUpdate(
     { wallet_address: recievedData.wallet_address },
     recievedData,
-    { new: true }
+    { new: true },
   );
   return updatedUser;
 };
