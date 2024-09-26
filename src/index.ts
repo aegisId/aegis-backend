@@ -3,6 +3,7 @@ import "winston-daily-rotate-file";
 import app from "./app";
 import * as NodeCache from "node-cache";
 import mongoose from "mongoose";
+import "dotenv/config";
 
 const { combine, timestamp, json } = winston.format;
 
@@ -11,13 +12,22 @@ mongoose.set({
 });
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/local", {
-    dbName: "local",
-  })
+  .connect(
+    process.env.DB_CONNECTION_URL
+      ? process.env.DB_CONNECTION_URL
+      : "mongodb://127.0.0.1:27017/local",
+    {
+      dbName: process.env.DB_NAME,
+      user: process.env.DB_USER_NAME,
+      pass: process.env.DB_PASSWORD,
+    }
+  )
   .then(() => {
     logger.info("MongoDB Connected...");
   })
   .catch((error: any) => {
+    console.log(process.env.DB_USERNAME);
+
     logger.error("MongoDB connection error: ", error);
   });
 

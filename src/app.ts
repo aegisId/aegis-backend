@@ -9,10 +9,10 @@ const server = fastify({
 });
 
 server.register(cors, {
-  origin: '*',
+  origin: "*",
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
-  exposedHeaders: ["Custom-Header"], 
+  exposedHeaders: ["Custom-Header"],
   credentials: false,
   maxAge: 86400,
 });
