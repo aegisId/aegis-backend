@@ -20,14 +20,12 @@ mongoose
       dbName: process.env.DB_NAME,
       user: process.env.DB_USER_NAME,
       pass: process.env.DB_PASSWORD,
-    }
+    },
   )
   .then(() => {
     logger.info("MongoDB Connected...");
   })
   .catch((error: any) => {
-    console.log(process.env.DB_USERNAME);
-
     logger.error("MongoDB connection error: ", error);
   });
 
