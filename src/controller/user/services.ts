@@ -7,7 +7,7 @@ import { NFT_CONTRACT } from "../../constants";
 
 const processUpdateUserModel = (
   recievedData: UserModel,
-  exisingData: UserModel
+  exisingData: UserModel,
 ) => {
   return {
     wallet_address: exisingData.wallet_address,
@@ -53,7 +53,7 @@ const processUpdateUserModel = (
 
 export async function postUser(
   request: FastifyRequest<{ Body: UserModel }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const req = request.body;
   try {
@@ -70,7 +70,7 @@ export async function postUser(
 
 export async function getUser(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     if (request.query.address === undefined) {
@@ -90,7 +90,7 @@ export async function getUser(
 
 export async function getAllUsers(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const user = await getAlluserDao();
@@ -108,7 +108,7 @@ export async function updateUser(
   request: FastifyRequest<{
     Body: UserModel;
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     if (request.body.wallet_address === undefined) {
@@ -121,7 +121,7 @@ export async function updateUser(
       return;
     }
     const updatedUser = await updateUserDao(
-      processUpdateUserModel(request.body, user)
+      processUpdateUserModel(request.body, user),
     );
     if (!updatedUser) {
       reply.status(404).send({ message: "User not found" });
@@ -135,7 +135,7 @@ export async function updateUser(
 
 export async function deleteUser(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const deletedUser = await registerDetails.findOneAndDelete({
@@ -153,7 +153,7 @@ export async function deleteUser(
 
 export async function getWalletScore(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const user = await getuserDao(request.query.address);
@@ -169,7 +169,7 @@ export async function getWalletScore(
 }
 export async function isWalletExist(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const user = await getuserDao(request.query.address);
@@ -185,7 +185,7 @@ export async function isWalletExist(
 
 export async function onChainScore(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const user = await getuserDao(request.query.address);
@@ -202,7 +202,7 @@ export async function onChainScore(
 
 export async function isSocialVerified(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const user = await getuserDao(request.query.address);
   if (user) {
@@ -218,7 +218,7 @@ export async function isSocialVerified(
 
 async function updateUserKycPoints(
   user: UserModel,
-  additionalPoints: number
+  additionalPoints: number,
 ): Promise<UserModel> {
   const updatedUser = await updateUserDao(
     processUpdateUserModel(
@@ -227,8 +227,8 @@ async function updateUserKycPoints(
         wallet_address: user.wallet_address,
         kyc_points: (user.kyc_points || 0) + additionalPoints,
       },
-      user
-    )
+      user,
+    ),
   );
   if (!updatedUser) {
     throw new Error("Failed to update user");
@@ -238,7 +238,7 @@ async function updateUserKycPoints(
 
 export async function verifyKycFromBinance(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const { address } = request.query;
@@ -272,7 +272,7 @@ export async function verifyKycFromBinance(
 
 export async function isKycVerified(
   request: FastifyRequest<{ Querystring: { address: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const { address } = request.query;
