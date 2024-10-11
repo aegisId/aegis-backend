@@ -60,7 +60,7 @@ const registerSchema = new schema<UserModel>({
   on_chain_points: {
     type: Number,
     default: 0,
-  },
+  }
 });
 
 // Pre-save middleware to calculate sum
