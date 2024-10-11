@@ -1,14 +1,14 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { registerDetails } from "../model/user";
-import { UserPostRequest } from "../types";
+import { UserModel } from "../types";
 
 export async function postUserController(fastify: FastifyInstance) {
   // POST /api/v1/user
   fastify.post(
     "/",
     async function (
-      request: FastifyRequest<{ Body: UserPostRequest }>,
-      reply: FastifyReply
+      request: FastifyRequest<{ Body: UserModel }>,
+      reply: FastifyReply,
     ) {
       const req = request.body;
 
@@ -21,7 +21,7 @@ export async function postUserController(fastify: FastifyInstance) {
           .status(500)
           .send({ error: "Failed to save user data", details: err });
       }
-    }
+    },
   );
 }
 
@@ -30,7 +30,7 @@ export async function getUserController(fastify: FastifyInstance) {
     "/",
     async function (
       request: FastifyRequest<{ Querystring: { address: string } }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) {
       try {
         const user = await registerDetails.findOne({
@@ -44,7 +44,7 @@ export async function getUserController(fastify: FastifyInstance) {
       } catch (err) {
         reply.status(500).send({ error: "Failed to fetch user", details: err });
       }
-    }
+    },
   );
 }
 
@@ -62,7 +62,7 @@ export async function getAllController(fastify: FastifyInstance) {
       } catch (err) {
         reply.status(500).send({ error: "Failed to fetch user", details: err });
       }
-    }
+    },
   );
 }
 
@@ -71,9 +71,9 @@ export async function updateUser(fastify: FastifyInstance) {
     "/",
     async function (
       request: FastifyRequest<{
-        Body: UserPostRequest;
+        Body: UserModel;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) {
       try {
         if (request.body.wallet_address === undefined) {
@@ -83,7 +83,7 @@ export async function updateUser(fastify: FastifyInstance) {
         const updatedUser = await registerDetails.findOneAndUpdate(
           { wallet_address: request.body.wallet_address },
           request.body,
-          { new: true }
+          { new: true },
         );
         if (!updatedUser) {
           reply.status(404).send({ message: "User not found" });
@@ -95,7 +95,7 @@ export async function updateUser(fastify: FastifyInstance) {
           .status(500)
           .send({ error: "Failed to update user", details: err });
       }
-    }
+    },
   );
 }
 
@@ -104,7 +104,7 @@ export async function deleteUser(fastify: FastifyInstance) {
     "/",
     async function (
       request: FastifyRequest<{ Querystring: { address: string } }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) {
       try {
         const deletedUser = await registerDetails.findOneAndDelete({
@@ -120,6 +120,6 @@ export async function deleteUser(fastify: FastifyInstance) {
           .status(500)
           .send({ error: "Failed to delete user", details: err });
       }
-    }
+    },
   );
 }
