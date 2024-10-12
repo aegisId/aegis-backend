@@ -66,10 +66,10 @@ const registerSchema = new schema<UserModel>({
 // Pre-save middleware to calculate sum
 registerSchema.pre("save", function (next) {
   this.wallet_score =
-    this.kyc_points +
-    this.on_chain_points +
-    this.biometric_points +
-    this.social_points; // Recalculating sum before saving
+    (this.kyc_points ?? 0) +
+    (this.on_chain_points ?? 0) +
+    (this.biometric_points ?? 0) +
+    (this.social_points ?? 0); // Recalculating sum before saving
   next();
 });
 

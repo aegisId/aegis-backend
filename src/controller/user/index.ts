@@ -9,6 +9,8 @@ import {
   isWalletExist,
   onChainScore,
   isSocialVerified,
+  verifyKycFromBinance,
+  isKycVerified,
 } from "./services";
 export default async function userController(fastify: FastifyInstance) {
   fastify.post("/post", postUser);
@@ -20,4 +22,6 @@ export default async function userController(fastify: FastifyInstance) {
   fastify.get("/isExist", isWalletExist);
   fastify.get("/onChainScore", onChainScore);
   fastify.get("/isSocialVerified", isSocialVerified);
+  fastify.get("/verifyKycFromBinance", verifyKycFromBinance);
+  fastify.get("/isKycVerified", isKycVerified);
 }

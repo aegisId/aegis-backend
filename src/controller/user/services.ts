@@ -2,6 +2,8 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { registerDetails } from "../../model/user";
 import { UserModel } from "../../types";
 import { getuserDao, getAlluserDao, postUserDao, updateUserDao } from "./dao";
+import { ethers } from "ethers";
+import { NFT_CONTRACT } from "../../constants";
 
 const processUpdateUserModel = (
   recievedData: UserModel,
@@ -211,5 +213,84 @@ export async function isSocialVerified(
     });
   } else {
     reply.status(200).send("user not found");
+  }
+}
+
+async function updateUserKycPoints(
+  user: UserModel,
+  additionalPoints: number,
+): Promise<UserModel> {
+  const updatedUser = await updateUserDao(
+    processUpdateUserModel(
+      //@ts-ignore
+      {
+        wallet_address: user.wallet_address,
+        kyc_points: (user.kyc_points || 0) + additionalPoints,
+      },
+      user,
+    ),
+  );
+  if (!updatedUser) {
+    throw new Error("Failed to update user");
+  }
+  return updatedUser;
+}
+
+export async function verifyKycFromBinance(
+  request: FastifyRequest<{ Querystring: { address: string } }>,
+  reply: FastifyReply,
+) {
+  try {
+    const { address } = request.query;
+    if (!address) {
+      reply.status(400).send({ message: "Wallet address is required" });
+      return;
+    }
+    const user = await getuserDao(request.query.address);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (!user.kyc_points && user.kyc_points !== 0) {
+      reply.status(200).send({ verified: true });
+    }
+    const balance = BigInt(await NFT_CONTRACT.balanceOf(address));
+    if (Number(balance.toString()) > 0) {
+      await updateUserKycPoints(user, 10);
+
+      reply.status(200).send({ verified: true });
+    } else {
+      reply.status(200).send({ verified: false });
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message === "User not found") {
+      reply.status(404).send({ message: error.message });
+    } else {
+      reply.status(500).send({ message: "Internal server error" });
+    }
+  }
+}
+
+export async function isKycVerified(
+  request: FastifyRequest<{ Querystring: { address: string } }>,
+  reply: FastifyReply,
+) {
+  try {
+    const { address } = request.query;
+    if (!address) {
+      reply.status(400).send({ message: "Wallet address is required" });
+      return;
+    }
+    const user = await getuserDao(request.query.address);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const isVerified = user.kyc_points ? user.kyc_points > 0 : false;
+    reply.status(200).send({ isVerified });
+  } catch (error) {
+    if (error instanceof Error && error.message === "User not found") {
+      reply.status(404).send({ message: error.message });
+    } else {
+      reply.status(500).send({ message: "Internal server error" });
+    }
   }
 }
