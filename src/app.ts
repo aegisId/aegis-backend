@@ -16,7 +16,10 @@ server.register(cors, {
   credentials: false,
   maxAge: 86400,
 });
-
+// Health check route
+server.get('/health', async () => {
+  return { status: 'ok', timestamp: new Date() };
+});
 // Middleware: Router
 server.register(router);
 server.register(fastifyCookie);
