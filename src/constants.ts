@@ -14,11 +14,11 @@ export const ERC721_ABI = [
 ];
 
 const provider = new ethers.JsonRpcProvider(
-  "https://bsc-dataseed.binance.org/",
+  "https://bsc-dataseed.binance.org/"
 );
 
 export const NFT_CONTRACT = new ethers.Contract(
   NFT_CONTRACT_ADDRESS,
   ERC721_ABI,
-  provider,
+  provider
 );
