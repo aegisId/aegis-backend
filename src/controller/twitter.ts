@@ -1,98 +1,70 @@
-import { TwitterApi } from "twitter-api-v2";
 import dotenv from "dotenv";
 import { FastifyInstance } from "fastify/types/instance";
-import { FastifyRequest } from "fastify/types/request";
-import { FastifyReply } from "fastify/types/reply";
+import axios from "axios";
+import crypto from "crypto";
 dotenv.config();
 
+interface CallbackQuery {
+  code?: string;
+  state?: string;
+}
+
 export default async function addTwiterpoints(fastify: FastifyInstance) {
-  fastify.post(
-    "/authlink",
-    async function (request: FastifyRequest<any>, reply: FastifyReply) {
-      let authlink: any;
-      try {
-        const CONSUMER_KEY = "a2JKTkhHQk5wLUJkQWlPRkVFNjM6MTpjaQ";
-        const CONSUMER_SECRET =
-          "XQE8pFntlhxfZ1gXbLMiOp1kIMaJEnFBb5DpUMiiu2H-PrelU4";
-        const GENERATE_LINK = "https://www.aegisid.io/auth-return";
-        const client = new TwitterApi({
-          appKey: CONSUMER_KEY,
-          appSecret: CONSUMER_SECRET,
-        });
-        authlink = await client.generateAuthLink(GENERATE_LINK);
-      } catch (error) {
-        const errorresponse = {
-          status: 400,
-          message: "something went wrong",
-          error: error,
-        };
-        reply.code(400).send(errorresponse);
-      }
-      const { url, oauth_token, oauth_token_secret } = authlink;
-      request.session.oauth_token = oauth_token;
-      request.session.oauth_token_secret = oauth_token_secret;
+  fastify.get<{
+    Querystring: CallbackQuery;
+    Reply: { userId?: string; error?: string };
+  }>("/callback", async (request, reply) => {
+    const { code, state } = request.query;
+    if (!code) {
+      return reply.code(400).send({ error: "Missing code parameter" });
+    }
 
-      const response = {
-        status: 200,
-        authlink: url,
-      };
-      reply.code(200).send(response);
-    },
-  );
+    try {
+      const tokenResponse = await axios.post(
+        "https://api.twitter.com/2/oauth2/token",
+        new URLSearchParams({
+          code,
+          grant_type: "authorization_code",
+          client_id: process.env.TWITTER_CLIENT_ID!,
+          redirect_uri: process.env.REDIRECT_URI!,
+          code_verifier: "challenge",
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${Buffer.from(
+              `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`,
+            ).toString("base64")}`,
+          },
+        },
+      );
 
-  // fastify.post(
-  //     "/connect",
-  //     async function (
-  //         request: FastifyRequest<{
-  //             Body: {
-  //                 oauth_token: string,
-  //                 oauth_verifier: string
-  //             }
-  //         }>,
-  //         reply: FastifyReply
-  //     ) {
-  //         let client: any;
+      const { access_token } = tokenResponse.data;
 
-  //         const {
-  //             oauth_token,
-  //             oauth_verifier
-  //         } = request.body;
+      const userResponse = await axios.get(
+        "https://api.twitter.com/2/users/me",
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      );
 
-  //         try {
-  //             client = new TwitterApi({
-  //                 appKey: process.env.CONSUMER_KEY || "",
-  //                 appSecret: process.env.CONSUMER_SECRET || "",
-  //                 accessToken: oauth_token,
-  //                 accessSecret: request.session.oauth_token_secret
-  //             });
-  //         }
-  //         catch (error) {
-  //             const errorresponse = {
-  //                 status: 400,
-  //                 message: "something went wrong"
-  //             }
-  //             reply.code(400).send(errorresponse)
-  //         }
-  //         try {
-  //             const { client: loggedClient, accessToken, accessSecret }: {
-  //                 client: any,
-  //                 accessToken: string,
-  //                 accessSecret: string
-  //             } = await client.login(oauth_verifier);
+      const userId = userResponse.data.data.id;
+      return reply.send({ userId });
+    } catch (error) {
+      console.error(error);
+      return reply
+        .code(500)
+        .send({ error: "An error occurred during authentication" });
+    }
+  });
 
-  //             request.session.access_token = accessToken;
-  //             request.session.access_secret = accessSecret;
-  //             request.session.loggedClient = loggedClient;
-  //             const success = {
-  //                 status: 200,
-  //                 client: loggedClient,
-  //                 message: "sucessssssss"
-  //             }
-  //             reply.code(200).send(success)
-  //         } catch (e) {
-  //             reply.code(400).send({ message: "Client login failed!" });
-  //         }
-
-  //     }
-  // )
+  fastify.get<{ Reply: { url: string } }>("/auth", async (request, reply) => {
+    const state = crypto.randomBytes(16).toString("hex");
+    const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${process
+      .env.TWITTER_CLIENT_ID!}&redirect_uri=${process.env
+      .REDIRECT_URI!}&scope=tweet.read%20users.read&state=${state}&code_challenge=challenge&code_challenge_method=plain`;
+    return reply.send({ url: authUrl });
+  });
 }
