@@ -14,7 +14,7 @@ interface TelegramUser {
     auth_date: number;
   }
 
-export default async function addTwiterpoints(fastify: FastifyInstance) {
+export default async function Telegram(fastify: FastifyInstance) {
   fastify.get(
     "/login",
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -41,7 +41,7 @@ export default async function addTwiterpoints(fastify: FastifyInstance) {
         script.setAttribute("data-telegram-login", "${process.env.TELEGRAM_BOT_NAME!}");
         script.setAttribute("data-size", "large");
         script.setAttribute("data-userpic", "false");
-        script.setAttribute("data-auth-url", "${process.env.REDIRECT_URI!}/callback");
+        script.setAttribute("data-auth-url", "${process.env.REDIRECT_URI!}");
 
         document.body.appendChild(script);
       </script>
