@@ -16,7 +16,7 @@ export default async function Mobile(fastify: FastifyInstance) {
       request: FastifyRequest<{
         Querystring: { phoneNumber: string };
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { phoneNumber } = request.query;
       const formattedMobileNumber = `+91${phoneNumber}`;
@@ -29,7 +29,7 @@ export default async function Mobile(fastify: FastifyInstance) {
         console.error("Error sending OTP:", error);
         reply.code(500).send({ success: false, error: "Error sending OTP" });
       }
-    }
+    },
   );
   fastify.get<{
     Querystring: { phoneNumber: string; otp: string };
@@ -39,7 +39,7 @@ export default async function Mobile(fastify: FastifyInstance) {
       request: FastifyRequest<{
         Querystring: { phoneNumber: string; otp: string };
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { phoneNumber, otp } = request.query;
       const formattedMobileNumber = `+91${phoneNumber}`;
@@ -56,6 +56,6 @@ export default async function Mobile(fastify: FastifyInstance) {
         console.error("Error verifying OTP:", error);
         reply.code(500).send({ success: false, error: "Error verifying OTP" });
       }
-    }
+    },
   );
 }
