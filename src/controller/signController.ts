@@ -34,7 +34,7 @@ export default async function signController(fastify: FastifyInstance) {
         additionalSigners?: string[];
       };
       const deserializer = new Deserializer(
-        new Uint8Array(Object.values(incomingData.data))
+        new Uint8Array(Object.values(incomingData.data)),
       );
       const rawTransaction = RawTransaction.deserialize(deserializer);
 
@@ -56,6 +56,6 @@ export default async function signController(fastify: FastifyInstance) {
           aegisPublicKey: account.publicKey.toString(),
         })
         .status(200);
-    }
+    },
   );
 }
