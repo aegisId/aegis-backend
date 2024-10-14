@@ -1,8 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import * as snarkjs from "snarkjs";
 import "dotenv/config";
 import {
-  AnyRawTransaction,
   Aptos,
   AptosConfig,
   Deserializer,
@@ -31,10 +29,12 @@ export default async function signController(fastify: FastifyInstance) {
       const account = await aptos.deriveAccountFromPrivateKey({
         privateKey: privateKey,
       });
-      const serializedTx = (_request.body as any).serializedTx;
-
+      const incomingData = _request.body as {
+        data: Uint8Array;
+        additionalSigners?: string[];
+      };
       const deserializer = new Deserializer(
-        new Uint8Array(Object.values(serializedTx)),
+        new Uint8Array(Object.values(incomingData.data)),
       );
       const rawTransaction = RawTransaction.deserialize(deserializer);
 

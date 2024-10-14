@@ -17,8 +17,8 @@ server.register(cors, {
   maxAge: 86400,
 });
 // Health check route
-server.get('/health', async () => {
-  return { status: 'ok', timestamp: new Date() };
+server.get("/health", async () => {
+  return { status: "ok", timestamp: new Date() };
 });
 // Middleware: Router
 server.register(router);

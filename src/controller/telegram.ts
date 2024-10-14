@@ -6,13 +6,13 @@ import { AuthDataValidator, objectToAuthDataMap } from "@telegram-auth/server";
 dotenv.config();
 
 interface TelegramUser {
-    id: number;
-    first_name: string;
-    last_name?: string;
-    username?: string;
-    photo_url?: string;
-    auth_date: number;
-  }
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+}
 
 export default async function Telegram(fastify: FastifyInstance) {
   fastify.get(
@@ -38,7 +38,8 @@ export default async function Telegram(fastify: FastifyInstance) {
         const script = document.createElement("script");
         script.async = true;
         script.src = "https://telegram.org/js/telegram-widget.js?22";
-        script.setAttribute("data-telegram-login", "${process.env.TELEGRAM_BOT_NAME!}");
+        script.setAttribute("data-telegram-login", "${process.env
+          .TELEGRAM_BOT_NAME!}");
         script.setAttribute("data-size", "large");
         script.setAttribute("data-userpic", "false");
         script.setAttribute("data-auth-url", "${process.env.REDIRECT_URI!}");
@@ -51,24 +52,32 @@ export default async function Telegram(fastify: FastifyInstance) {
     `;
 
       return reply.type("text/html").send(htmlContent);
-    }
+    },
   );
   fastify.get<{
     Querystring: Record<string, string>;
-  }>('/callback', async (request: FastifyRequest<{
-    Querystring: Record<string, string>;
-  }>, reply: FastifyReply) => {
-    const validator = new AuthDataValidator({ botToken: process.env.TELEGRAM_BOT_TOKEN! });
-    const data = objectToAuthDataMap(request.query);
+  }>(
+    "/callback",
+    async (
+      request: FastifyRequest<{
+        Querystring: Record<string, string>;
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const validator = new AuthDataValidator({
+        botToken: process.env.TELEGRAM_BOT_TOKEN!,
+      });
+      const data = objectToAuthDataMap(request.query);
 
-    try {
-      const user = await validator.validate(data) as TelegramUser;
-      const userDataString = encodeURIComponent(JSON.stringify(user));
-      const redirectUrl = `${process.env.REDIRECT_URI}?user=${userDataString}`;      
-      reply.redirect(redirectUrl);
-    } catch (error) {
-      console.error("Error validating Telegram data:", error);
-      reply.code(400).send("Invalid Telegram data");
-    }
-  });
+      try {
+        const user = (await validator.validate(data)) as TelegramUser;
+        const userDataString = encodeURIComponent(JSON.stringify(user));
+        const redirectUrl = `${process.env.REDIRECT_URI}?user=${userDataString}`;
+        reply.redirect(redirectUrl);
+      } catch (error) {
+        console.error("Error validating Telegram data:", error);
+        reply.code(400).send("Invalid Telegram data");
+      }
+    },
+  );
 }
